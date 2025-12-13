@@ -12,6 +12,12 @@ class OrgBaseModel(BaseModel):
     """
     Docstring for OrgBaseModel
     """
-    __abstract__= True
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4, index=True, nullable=False)
+    __abstract__ = True
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, default=uuid.uuid4, index=True, nullable=False
+    )
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        default=uuid.uuid4, index=True, nullable=False
+    )
