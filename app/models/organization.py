@@ -6,7 +6,12 @@ import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import BaseModel
 from sqlalchemy import String
-from typing import Optional
+from typing import Optional, TYPE_CHECKING, List
+
+
+if TYPE_CHECKING:
+    from .user import User
+    from .branch import Branch
 
 
 class Organization(BaseModel):
@@ -29,9 +34,8 @@ class Organization(BaseModel):
         String(10), nullable=True, default="UGX"
     )
 
-    users = relationship("User", back_populates="organization")
-    branches = relationship("Branch", back_populates="organization")
-
+    users: Mapped[List["User"]] = relationship("User", back_populates="organization")
+    branches: Mapped[List["Branch"]] = relationship("Branch", back_populates="organization")
 
     def __repr__(self) -> str:
         return f"<Organization(id={self.id}, name={self.name})>"

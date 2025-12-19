@@ -13,21 +13,17 @@ if TYPE_CHECKING:
 
 
 class Branch(OrgBaseModel):
-    """
-    Represents a specific physical hotspot location.
-    """
-
     __tablename__ = "branches"
     
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     address: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    email: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, nullable=True
+    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
+
+    organization: Mapped["Organization"] = relationship(
+        "Organization", 
+        back_populates="branches"
     )
 
-    # Override organization to specify back_populates
-    organization: Mapped["Organization"] = relationship("Organization", back_populates="branches")
-
     def __repr__(self) -> str:
-        return f"<Branch(id={self.id}, name={self.name}, organization_id={self.organization_id})>"
+        return f"<Branch(name={self.name})>"

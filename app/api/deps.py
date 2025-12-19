@@ -9,8 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-import jwt
-from jwt.exceptions import InvalidTokenError
+from jose import jwt, JWTError
 from pydantic import ValidationError
 
 from app.core.config import get_settings
@@ -40,7 +39,7 @@ async def get_current_user(
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except InvalidTokenError:
+    except JWTError:
         raise credentials_exception
     
     # Eager load roles

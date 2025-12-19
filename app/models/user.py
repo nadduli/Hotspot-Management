@@ -27,6 +27,4 @@ class User(OrgBaseModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     roles: Mapped[list["Role"]] = relationship("Role", secondary="user_roles", back_populates="users")
-    
-    # Override organization to specify back_populates
     organization: Mapped["Organization"] = relationship("Organization", back_populates="users")

@@ -4,7 +4,7 @@ Docstring for app.core.security
 """
 
 from datetime import datetime, timedelta, timezone
-import jwt
+from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import get_settings
 

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.db.init_db import init_db
 from app.db.session import get_db
+import app.models
 
 
 settings = get_settings()
@@ -21,11 +22,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS Configuration
 origins = [
+    "*",
     "http://localhost",
-    "http://localhost:3000",  # React/Next.js default
-    "http://localhost:5173",  # Vite default
+    "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
