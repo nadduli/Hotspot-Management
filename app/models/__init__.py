@@ -3,11 +3,9 @@
 Docstring for app.models.__init__ - Initialize models.
 """
 from .user import User
-from .roles import Role
-from .user_role import UserRole
+from .auth import Role
 from .organization import Organization
 from .branch import Branch
-
 
 
 __all__ = [

@@ -6,7 +6,7 @@ Authentication Service
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.user import User
-from app.models.roles import Role
+from app.models.auth import Role
 from app.schemas.auth import UserCreate
 from app.core.security import verify_password, hash_password
 from app.core.config import get_settings
@@ -35,12 +35,14 @@ class AuthService:
             return None
         return user
 
-    async def create_user(self, user_in: UserCreate, organization_id: uuid.UUID, role_name: str = "ADMIN") -> User:
+    async def create_user(
+        self, user_in: UserCreate, organization_id: uuid.UUID, role_name: str = "ADMIN"
+    ) -> User:
         """
         Create a new user with a specific role
         """
         hashed_password = hash_password(user_in.password)
-        
+
         # Fetch role
         result = await self.db.execute(select(Role).where(Role.name == role_name))
         role = result.scalars().first()
@@ -57,7 +59,7 @@ class AuthService:
             organization_id=organization_id,
         )
         db_user.roles.append(role)
-        
+
         self.db.add(db_user)
         await self.db.commit()
         await self.db.refresh(db_user)

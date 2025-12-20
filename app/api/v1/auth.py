@@ -43,7 +43,9 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    return Token(
+        access_token=access_token, expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
 
 
 @router.post("/register", response_model=Token)
@@ -70,13 +72,17 @@ async def register_user(
     await db.refresh(new_org)
 
     auth_service = AuthService(db)
-    user = await auth_service.create_user(user_in, organization_id=new_org.id, role_name="ADMIN")
+    user = await auth_service.create_user(
+        user_in, organization_id=new_org.id, role_name="ADMIN"
+    )
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    return Token(
+        access_token=access_token, expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
 
 
 @router.get("/me")
@@ -91,5 +97,5 @@ async def read_users_me(
         "name": current_user.name,
         "email": current_user.email,
         "is_active": current_user.is_active,
-        "organization_id": current_user.organization_id
+        "organization_id": current_user.organization_id,
     }

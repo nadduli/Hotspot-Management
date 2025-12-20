@@ -35,19 +35,21 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     # Eager load roles
     result = await db.execute(
         select(User).options(selectinload(User.roles)).where(User.email == email)
     )
     user = result.scalars().first()
-    
+
     if user is None:
         raise credentials_exception
     return user

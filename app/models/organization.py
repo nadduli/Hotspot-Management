@@ -4,14 +4,9 @@ Docstring for app.models.organization - Organization (Tenant) model.
 """
 import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import BaseModel
+from app.db.base_model import BaseModel
 from sqlalchemy import String
-from typing import Optional, TYPE_CHECKING, List
-
-
-if TYPE_CHECKING:
-    from .user import User
-    from .branch import Branch
+from typing import Optional
 
 
 class Organization(BaseModel):
@@ -25,17 +20,8 @@ class Organization(BaseModel):
         primary_key=True, default=uuid.uuid4, index=True, nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    address: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    email: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, nullable=True
-    )
-    currency: Mapped[Optional[str]] = mapped_column(
-        String(10), nullable=True, default="UGX"
-    )
+    description: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
 
-    users: Mapped[List["User"]] = relationship("User", back_populates="organization")
-    branches: Mapped[List["Branch"]] = relationship("Branch", back_populates="organization")
-
-    def __repr__(self) -> str:
-        return f"<Organization(id={self.id}, name={self.name})>"
+    branches: Mapped[list["Branch"]] = relationship(
+        back_populates="organization", cascade="all, delete-orphan"
+    )

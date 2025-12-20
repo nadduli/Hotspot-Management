@@ -4,7 +4,6 @@ App Configuration
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
 from functools import lru_cache
 
 
@@ -18,8 +17,6 @@ class Settings(BaseSettings):
 
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_PORT: int = 5432
     POSTGRES_DB: str
 
     SECRET_KEY: str
@@ -31,15 +28,11 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=True
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
     )
-
-    @property
-    def DATABASE_URL(self) -> str:
-        return (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
-            f"{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
 
 
 @lru_cache()

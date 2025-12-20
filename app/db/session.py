@@ -10,7 +10,9 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
+DB_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@localhost:5432/{settings.POSTGRES_DB}"
+
+engine = create_async_engine(url=DB_URL, echo=True, pool_pre_ping=True)
 
 SessionLocal = async_sessionmaker(
     autocommit=False,
@@ -22,12 +24,7 @@ SessionLocal = async_sessionmaker(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Docstring for get_db
-
-    :return: Description
-    :rtype: AsyncGenerator[AsyncSession, None]
-    """
+    """ """
     db = SessionLocal()
     try:
         yield db

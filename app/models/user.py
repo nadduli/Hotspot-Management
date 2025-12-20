@@ -1,30 +1,25 @@
 #!/usr/bin/python3
-"""
-Docstring for app.models.user - User Account model.
-"""
-
+"""User model definition."""
+from __future__ import annotations
+import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean
-from app.db.org_base import OrgBaseModel
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from app.models.roles import Role
-    from app.models.organization import Organization
+from sqlalchemy import String, ForeignKey
+from app.db.base_model import BaseModel
 
 
-class User(OrgBaseModel):
-    """
-    Represents a user account within the system.
-    """
+class User(BaseModel):
+    """User model representing system users."""
 
     __tablename__ = "users"
-    
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str | None] = mapped_column(String(150), unique=True, index=True)
-    phone: Mapped[str | None] = mapped_column(String(20), unique=True)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, default=uuid.uuid4, index=True, nullable=False
+    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String(255))
+    full_name: Mapped[str] = mapped_column(String(255))
 
-    roles: Mapped[list["Role"]] = relationship("Role", secondary="user_roles", back_populates="users")
-    organization: Mapped["Organization"] = relationship("Organization", back_populates="users")
+    role_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"))
+    branch_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("branches.id"))
+
+    role: Mapped["Role"] = relationship("Role", back_populates="users", lazy="selectin")  # type: ignore
+    branch: Mapped["Branch"] = relationship("Branch", back_populates="users")  # type: ignore

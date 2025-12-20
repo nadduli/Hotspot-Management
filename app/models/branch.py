@@ -2,28 +2,25 @@
 """
 Docstring for app.models.branch - Physical Hotspot Location model.
 """
+import uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
-from app.db.org_base import OrgBaseModel
-from typing import Optional, TYPE_CHECKING
 from sqlalchemy.orm import relationship
+from app.db.base_model import BaseModel
+from typing import Optional
+from sqlalchemy import ForeignKey
+from .organization import Organization
 
-if TYPE_CHECKING:
-    from app.models.organization import Organization
 
-
-class Branch(OrgBaseModel):
+class Branch(BaseModel):
     __tablename__ = "branches"
-    
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    address: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
 
-    organization: Mapped["Organization"] = relationship(
-        "Organization", 
-        back_populates="branches"
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, default=uuid.uuid4, index=True, nullable=False
     )
+    name: Mapped[str] = mapped_column(String(100), index=True)
+    address: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"))
 
-    def __repr__(self) -> str:
-        return f"<Branch(name={self.name})>"
+    organization: Mapped["Organization"] = relationship(back_populates="branches")
+    users: Mapped[list["User"]] = relationship(back_populates="branch")

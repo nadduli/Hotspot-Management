@@ -1,11 +1,13 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.anyio
 async def test_root(async_client: AsyncClient):
     response = await async_client.get("/")
     assert response.status_code == 200
     assert response.json()["status"] == "running"
+
 
 @pytest.mark.anyio
 async def test_health(async_client: AsyncClient):
@@ -13,9 +15,11 @@ async def test_health(async_client: AsyncClient):
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
 
+
 # Note: These tests require a running DB with seeded roles.
 # In a real CI environment, we would use a test DB.
 # For now, we are assuming the environment is set up or these will be skipped/fail gracefully if not.
+
 
 @pytest.mark.anyio
 async def test_register_admin_flow(async_client: AsyncClient):
@@ -24,7 +28,7 @@ async def test_register_admin_flow(async_client: AsyncClient):
         "name": "Admin User",
         "email": "admin@example.com",
         "password": "password123",
-        "phone": "1234567890"
+        "phone": "1234567890",
     }
     # This might fail if user exists, so we handle 400
     response = await async_client.post("/api/v1/auth/register", json=payload)
@@ -32,7 +36,7 @@ async def test_register_admin_flow(async_client: AsyncClient):
         # User exists, try login
         login_payload = {"username": payload["email"], "password": payload["password"]}
         response = await async_client.post("/api/v1/auth/login", data=login_payload)
-    
+
     assert response.status_code == 200
     token = response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -47,10 +51,12 @@ async def test_register_admin_flow(async_client: AsyncClient):
         "name": "Agent User",
         "email": "agent@example.com",
         "password": "password123",
-        "phone": "0987654321"
+        "phone": "0987654321",
     }
-    agent_response = await async_client.post("/api/v1/users/", json=agent_payload, headers=headers)
-    
+    agent_response = await async_client.post(
+        "/api/v1/users/", json=agent_payload, headers=headers
+    )
+
     if agent_response.status_code == 400:
         # Agent might exist
         pass

@@ -37,9 +37,7 @@ async def create_agent(
     auth_service = AuthService(db)
     # Create user with AGENT role in the same organization as the admin
     user = await auth_service.create_user(
-        user_in, 
-        organization_id=current_user.organization_id, 
-        role_name="AGENT"
+        user_in, organization_id=current_user.organization_id, role_name="AGENT"
     )
 
     return {
@@ -47,5 +45,5 @@ async def create_agent(
         "name": user.name,
         "email": user.email,
         "role": "AGENT",
-        "organization_id": user.organization_id
+        "organization_id": user.organization_id,
     }
