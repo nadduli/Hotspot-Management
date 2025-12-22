@@ -14,9 +14,6 @@ from alembic import context
 from app.core.config import get_settings
 from app.db.base_model import Base
 from app.models.user import *
-from app.models.organization import *
-from app.models.branch import *
-from app.models.role import *
 
 
 settings = get_settings()

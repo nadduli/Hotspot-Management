@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Any, Final
-from uuid import UUID
 
 
 PASSWORD_RULES: Final[tuple[tuple[re.Pattern[str], str], ...]] = (
@@ -25,7 +24,6 @@ class UserRegistrationRequest(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     password: str = Field(..., min_length=8, max_length=100, description="User's password")
     confirm_password: str = Field(..., min_length=8, max_length=100, description="Password confirmation")
-    branch_id: UUID = Field(...)
 
 
     @field_validator('password')
@@ -74,7 +72,6 @@ class UserRegistrationResponse(BaseModel):
     full_name: str
     email: str | None
     email_verified: bool
-    role: str
     is_active: bool
     created_at: datetime
 
@@ -86,7 +83,6 @@ class UserRegistrationResponse(BaseModel):
                 "full_name": "Lex Lee",
                 "email": "lex.lee@example.com",
                 "email_verified": False,
-                "role": "user",
                 "is_active": True,
                 "created_at": "2025-11-16T12:00:00"
             }

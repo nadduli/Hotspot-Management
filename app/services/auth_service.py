@@ -7,8 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserRegistrationRequest
 from sqlalchemy.exc import IntegrityError
 from app.utils.logger import logger
-from app.models.role import Role 
-
 
 
 class AuthService:
@@ -22,19 +20,12 @@ class AuthService:
                 context["is_registered"] = True
                 context["is_email_verified"] = existing_user.email_verified
                 return existing_user, context, None
-            
-            
-            role = await Role.fetch_unique(db, name="AGENT")
-            if not role:
-                return None, None, "Default role 'AGENT' not found in database"
-            
+
             new_user = User(
                 full_name=user_data.full_name,
                 email=user_data.email.lower() if user_data.email else None,
                 email_verified=True,
                 password_hash=hash_password(user_data.password),
-                role_id=role.id,               
-                branch_id=user_data.branch_id if hasattr(user_data, 'branch_id') else None,
             )
 
             new_user.add(db)

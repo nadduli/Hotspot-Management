@@ -12,8 +12,8 @@ from app.utils.responses import fail_response, success_response
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post(""
-"/register",
+@router.post(
+    "/register",
 status_code=status.HTTP_201_CREATED,
 summary="Register New User",
 response_description="User registration data",
@@ -50,7 +50,6 @@ async def register(user_data: UserRegistrationRequest, db: AsyncSession = Depend
         full_name=user.full_name,
         email=user.email,
         email_verified=user.email_verified,
-        role="AGENT",
         is_active=user.is_active,
         created_at=user.created_at,
     )
