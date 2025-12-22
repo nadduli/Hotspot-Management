@@ -1,4 +1,5 @@
-import uuid
+#!/usr/bin/python3
+"""Base model with common fields and methods for all database models"""
 from datetime import datetime, timezone
 from sqlalchemy import DateTime, select
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase

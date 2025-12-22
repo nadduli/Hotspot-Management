@@ -6,8 +6,7 @@ Main Application Entry Point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.db.session import get_db
-
+from app.api.v1.routes import app as api_v1_router
 
 
 settings = get_settings()
@@ -36,15 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-from app.api.v1.auth import router as auth_router
-
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
-
-from app.api.v1.users import router as users_router
-
-app.include_router(users_router, prefix="/api/v1/users", tags=["Users"])
-
+app.include_router(api_v1_router, prefix="/api/v1")
 
 @app.get("/", tags=["Home"])
 async def read_root():
@@ -53,7 +44,6 @@ async def read_root():
         "version": "1.0.0",
         "status": "running",
     }
-
 
 @app.get("/health", tags=["Home"])
 async def health_check():

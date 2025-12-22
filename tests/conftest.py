@@ -1,71 +1,73 @@
+#!/usr/bin/python3
+"""Configuration test - Compatible with pytest-asyncio < 0.24.0"""
+
+import sys
+import os
+import asyncio
+from typing import AsyncGenerator, Generator
+from httpx import ASGITransport, AsyncClient
 import pytest
-from typing import AsyncGenerator
-from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.pool import StaticPool
+
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.main import app
 from app.db.session import get_db
-from app.core.config import get_settings
 from app.db.base_model import Base
-from app.db.seed import init_db
 
-# Import models to register them with Base.metadata
-from app.models.user import User
-from app.models.auth import Role
-from app.models.user_role import UserRole
-from app.models.organization import Organization
-from app.models.branch import Branch
+DATABASE_URI = "sqlite+aiosqlite:///:memory:"
 
-settings = get_settings()
-
-# Use SQLite for testing
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-
-engine = create_async_engine(
-    TEST_DATABASE_URL, connect_args={"check_same_thread": False}
+engine_test = create_async_engine(
+    DATABASE_URI,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
 )
-TestingSessionLocal = async_sessionmaker(
+
+SessionLocal = async_sessionmaker(
+    bind=engine_test,
     autocommit=False,
     autoflush=False,
-    bind=engine,
-    class_=AsyncSession,
     expire_on_commit=False,
+    class_=AsyncSession
 )
 
-
-async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with TestingSessionLocal() as session:
-        yield session
-
-
-app.dependency_overrides[get_db] = override_get_db
-
-
 @pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
+def event_loop() -> Generator:
+    """Create a session-wide event loop for all async tests."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
-
-@pytest.fixture(scope="module")
-async def init_test_db():
-    # Create tables
-    async with engine.begin() as conn:
+@pytest.fixture(scope="session", autouse=True)
+async def init_test_db(event_loop):
+    """Create tables once per test session."""
+    async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-    # Seed roles
-    async with TestingSessionLocal() as db:
-        await init_db(db)
-
     yield
-
-    # Drop tables
-    async with engine.begin() as conn:
+    async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+@pytest.fixture
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Provide a clean session and rollback after each test."""
+    async with SessionLocal() as session:
+        yield session
+        await session.rollback()
 
-@pytest.fixture(scope="module")
-async def async_client(init_test_db) -> AsyncGenerator[AsyncClient, None]:
+@pytest.fixture
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """Override get_db dependency and provide an AsyncClient."""
+    def _get_test_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = _get_test_db
+    
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), 
+        base_url="http://test"
     ) as ac:
         yield ac
+    
+    app.dependency_overrides.clear()
