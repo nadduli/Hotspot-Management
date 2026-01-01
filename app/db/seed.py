@@ -7,6 +7,7 @@ from app.core.security import hash_password
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def seed():
     async with SessionLocal() as db:
         try:
@@ -28,6 +29,7 @@ async def seed():
             await db.rollback()
             logger.error(f"Seeding failed: {str(e)}")
             raise
+
 
 if __name__ == "__main__":
     asyncio.run(seed())

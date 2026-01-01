@@ -12,7 +12,10 @@ PASSWORD_RULES: Final[tuple[tuple[re.Pattern[str], str], ...]] = (
     (re.compile(r"[A-Z]"), "Password must contain at least one uppercase letter"),
     (re.compile(r"[a-z]"), "Password must contain at least one lowercase letter"),
     (re.compile(r"\d"), "Password must contain at least one digit"),
-    (re.compile(r"[!@#$%^&*(),.?\":{}|<>]"), "Password must contain at least one special character"),
+    (
+        re.compile(r"[!@#$%^&*(),.?\":{}|<>]"),
+        "Password must contain at least one special character",
+    ),
 )
 
 NAME_PATTERN: Final[re.Pattern[str]] = re.compile(r"^[a-zA-Z\s\-']+$")
@@ -20,13 +23,19 @@ NAME_PATTERN: Final[re.Pattern[str]] = re.compile(r"^[a-zA-Z\s\-']+$")
 
 class UserRegistrationRequest(BaseModel):
     """Schema for user registration request"""
-    full_name: str = Field(..., min_length=2, max_length=100, description="User's full name")
+
+    full_name: str = Field(
+        ..., min_length=2, max_length=100, description="User's full name"
+    )
     email: EmailStr = Field(..., description="User's email address")
-    password: str = Field(..., min_length=8, max_length=100, description="User's password")
-    confirm_password: str = Field(..., min_length=8, max_length=100, description="Password confirmation")
+    password: str = Field(
+        ..., min_length=8, max_length=100, description="User's password"
+    )
+    confirm_password: str = Field(
+        ..., min_length=8, max_length=100, description="Password confirmation"
+    )
 
-
-    @field_validator('password')
+    @field_validator("password")
     @classmethod
     def validate_password_strength(cls, v: str) -> str:
         """Validate password strength"""
@@ -35,24 +44,26 @@ class UserRegistrationRequest(BaseModel):
                 raise ValueError(message)
         return v
 
-    @field_validator('confirm_password')
+    @field_validator("confirm_password")
     @classmethod
     def passwords_match(cls, v: str, info: Any) -> str:
         """Validate that passwords match"""
-        password = info.data.get('password') if info.data else None
+        password = info.data.get("password") if info.data else None
         if password and v != password:
-            raise ValueError('Passwords do not match')
+            raise ValueError("Passwords do not match")
         return v
 
-    @field_validator('full_name')
+    @field_validator("full_name")
     @classmethod
     def validate_name(cls, v: str) -> str:
         """Validate name fields"""
         if not v.strip():
-            raise ValueError('Name cannot be empty or only whitespace')
+            raise ValueError("Name cannot be empty or only whitespace")
         if not NAME_PATTERN.match(v):
-            raise ValueError('Name can only contain letters, spaces, hyphens, and apostrophes')
-        return ' '.join(v.split())
+            raise ValueError(
+                "Name can only contain letters, spaces, hyphens, and apostrophes"
+            )
+        return " ".join(v.split())
 
     model_config = {
         "json_schema_extra": {
@@ -60,7 +71,7 @@ class UserRegistrationRequest(BaseModel):
                 "full_name": "Lex Lee",
                 "email": "lex.lee@example.com",
                 "password": "SecurePass123!",
-                "confirm_password": "SecurePass123!"
+                "confirm_password": "SecurePass123!",
             }
         }
     }
@@ -68,6 +79,7 @@ class UserRegistrationRequest(BaseModel):
 
 class UserRegistrationResponse(BaseModel):
     """Schema for user registration response"""
+
     id: str
     full_name: str
     email: str | None
@@ -84,7 +96,22 @@ class UserRegistrationResponse(BaseModel):
                 "email": "lex.lee@example.com",
                 "email_verified": False,
                 "is_active": True,
-                "created_at": "2025-11-16T12:00:00"
+                "created_at": "2025-11-16T12:00:00",
+            }
+        },
+    }
+
+
+class UserLoginRequest(BaseModel):
+    """Schema for user login request"""
+    email: EmailStr = Field(..., description="User's email address")
+    password: str = Field(..., description="User's password")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "lex.lee@example.com",
+                "password": "SecurePass123!",
             }
         }
     }

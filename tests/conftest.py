@@ -13,6 +13,8 @@ from sqlalchemy.pool import StaticPool
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+os.environ["SUPPRESS_SEND"] = "1"
+
 from app.main import app
 from app.db.session import get_db
 from app.db.base_model import Base
@@ -20,9 +22,7 @@ from app.db.base_model import Base
 DATABASE_URI = "sqlite+aiosqlite:///:memory:"
 
 engine_test = create_async_engine(
-    DATABASE_URI,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
+    DATABASE_URI, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 
 SessionLocal = async_sessionmaker(
@@ -30,8 +30,9 @@ SessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
     expire_on_commit=False,
-    class_=AsyncSession
+    class_=AsyncSession,
 )
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator:
@@ -39,6 +40,7 @@ def event_loop() -> Generator:
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def init_test_db(event_loop):
@@ -49,6 +51,7 @@ async def init_test_db(event_loop):
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Provide a clean session and rollback after each test."""
@@ -56,18 +59,19 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
         await session.rollback()
 
+
 @pytest.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """Override get_db dependency and provide an AsyncClient."""
+
     def _get_test_db():
         yield db_session
 
     app.dependency_overrides[get_db] = _get_test_db
-    
+
     async with AsyncClient(
-        transport=ASGITransport(app=app), 
-        base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
-    
+
     app.dependency_overrides.clear()

@@ -37,6 +37,7 @@ app.add_middleware(
 
 app.include_router(api_v1_router, prefix="/api/v1")
 
+
 @app.get("/", tags=["Home"])
 async def read_root():
     return {
@@ -44,6 +45,7 @@ async def read_root():
         "version": "1.0.0",
         "status": "running",
     }
+
 
 @app.get("/health", tags=["Home"])
 async def health_check():

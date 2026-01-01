@@ -11,7 +11,9 @@ DEFAULT_LOG_LEVEL = settings.LOG_LEVEL
 SERVICE_NAME = "Hotspot Management"
 
 
-correlation_id_context: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
+correlation_id_context: ContextVar[Optional[str]] = ContextVar(
+    "correlation_id", default=None
+)
 
 
 def _resolve_log_level(level: str) -> int:
@@ -44,7 +46,9 @@ def setup_logging(level: str = DEFAULT_LOG_LEVEL) -> logging.Logger:
     formatter = logging.Formatter(
         (
             '{"timestamp": "%(asctime)s", "level": "%(levelname)s", '
-            '"correlation_id": "%(correlation_id)s", "service": "' + SERVICE_NAME + '", '
+            '"correlation_id": "%(correlation_id)s", "service": "'
+            + SERVICE_NAME
+            + '", '
             '"message": "%(message)s", "module": "%(module)s", "function": "%(funcName)s"}'
         )
     )
